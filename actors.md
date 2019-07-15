@@ -678,7 +678,8 @@ func SubmitPost(proofs PoStProof, faults []FaultSet, recovered Bitfield, done Bi
 		TransferFunds(msg.From, msg.Value-feesRequired)
 	}
 
-	if !VerifyPost(self.SectorSize, self.provingSet, proof, faults) {
+    seed := GetRandFromBlock(self.ProvingPeriodStart + POST_CHALLENGE_TIME)
+	if !VerifyPost(self.SectorSize, self.provingSet, seed, proof, faults) {
 		Fatal("proof invalid")
 	}
 
