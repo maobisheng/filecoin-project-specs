@@ -522,7 +522,7 @@ type MinerInfo struct {
 | `IsSlashed` |  15 |
 | `IsLate` | 16 |
 | `PaymentVerify` | 17 |
-| `AddFault` | 18 |
+| `AddFaults` | 18 |
 
 #### `Constructor`
 
@@ -590,11 +590,6 @@ func CommitSector(sectorID SectorID, commD, commR, commRStar []byte, proof SealP
 
 	if collateralRequired > vm.MyBalance() {
 		Fatal("not enough collateral")
-	}
-
-	// ensure that the miner cannot commit more sectors than can be proved with a single PoSt
-	if miner.Sectors.Size() >= POST_SECTORS_COUNT {
-		Fatal("too many sectors")
 	}
 
 	// Note: There must exist a unique index in the miner's sector set for each
@@ -667,10 +662,10 @@ func SubmitPost(proofs PoStProof, doneSet Bitfield) {
 		TransferFunds(msg.From, msg.Value-feesRequired)
 	}
 
-    seed := GetRandFromBlock(self.ProvingPeriodStart + POST_CHALLENGE_TIME)
+    seed := GetRandFromBlock(self.ProvingPeriodStart + ProvingPeriodDuration(self.SectorSize) - POST_CHALLENGE_TIME)
     faultSet := self.faultSet
 
-	if !VerifyPost(self.SectorSize, self.provingSet, seed, proof, faultSet) {
+	if !VerifyPoSt(self.SectorSize, self.provingSet, seed, proof, faultSet) {
 		Fatal("proof invalid")
 	}
 
