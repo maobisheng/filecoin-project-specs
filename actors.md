@@ -522,9 +522,7 @@ type MinerInfo struct {
 | `IsSlashed` |  15 |
 | `IsLate` | 16 |
 | `PaymentVerify` | 17 |
-| `ReportFaultySectors` | 18 |
-| `RecoverFaultySectors` | 19 |
-
+| `AddFault` | 18 |
 
 #### `Constructor`
 
@@ -676,15 +674,14 @@ func SubmitPost(proofs PoStProof, doneSet Bitfield) {
 		Fatal("proof invalid")
 	}
 
-    // TODO: how does collateral burning happen now?
-
-    // TODO: this should happen once these sectors are lost, after the recovery period.
-    // Depends on updating the fault handling first.
-	// miner.Sectors.Subtract(faultSet)
+    // power is removed for the faults
+    miner.Sectors.Subtract(faultSet)
     // clear fault set
-    // self.faultSet = EmptySectorSet()
+    self.faultSet = EmptySectorSet()
 
-	// update sector sets and proving set
+    // TODO: penalize for faults
+
+	// Remove doneSet from the current sectors
 	miner.Sectors.Subtract(doneSet)
 
 	// Update miner power to the amount of data actually proved during the last proving period.
@@ -1100,6 +1097,24 @@ func ValidateInclusion(pip PieceInclusionProof, dataCommitment Bytes) bool {
   }
 
   return ValidatePIP(pip, dataCommitment)
+}
+```
+
+#### `AddFaults`
+
+**Parameters**
+
+```sh
+type SubmitPost struct {
+    faults FaultSet
+} representation tuple
+```
+
+**Algorithm**
+
+```go
+func AddFaults(faults FaultSet) {
+    self.faultSet = Merge(self.faultSet, faults)
 }
 ```
 
